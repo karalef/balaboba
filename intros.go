@@ -1,7 +1,5 @@
 package balaboba
 
-import "encoding/json"
-
 const introsapi = "intros"
 
 // Intro is generating style.
@@ -9,7 +7,7 @@ type Intro [3]interface{}
 
 // Style returns style code.
 func (i Intro) Style() Style {
-	return Style(i[0].(int))
+	return Style(i[0].(float64))
 }
 
 func (i Intro) String() string {
@@ -29,12 +27,6 @@ type IntrosResponse struct {
 
 // Intros returns list of avaible generating styles.
 func (c *Client) Intros() (*IntrosResponse, error) {
-	res, err := c.c.Get(api + introsapi)
-	if err != nil {
-		return nil, err
-	}
-	defer res.Body.Close()
-
 	var resp IntrosResponse
-	return &resp, json.NewDecoder(res.Body).Decode(&resp)
+	return &resp, c.get(introsapi, &resp)
 }
