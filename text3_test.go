@@ -14,21 +14,16 @@ func TestGet(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if gen.BadQuery != 0 {
-		t.Log("bad query", gen.BadQuery)
-		t.FailNow()
-	}
-
 	if gen.Error != 0 {
 		t.Log("bad error", gen.Error)
 		t.FailNow()
 	}
 
-	if gen.Text == "" {
-		t.Fatal()
+	if gen.BadQuery != 0 {
+		t.Log("bad query", gen.BadQuery)
+	} else {
+		t.Log(gen.Text)
 	}
-
-	t.Log(gen.Text)
 }
 
 func TestOptions(t *testing.T) {
