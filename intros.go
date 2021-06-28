@@ -1,22 +1,31 @@
 package balaboba
 
+import (
+	"encoding/json"
+)
+
 const introsapi = "intros"
 
 // Intro is generating style.
-type Intro [3]interface{}
-
-// Style returns style code.
-func (i Intro) Style() Style {
-	return Style(i[0].(float64))
+type Intro struct {
+	Style       Style
+	String      string
+	Description string
 }
 
-func (i Intro) String() string {
-	return i[1].(string)
-}
+// UnmarshalJSON is Unmarshaler interface implementation.
+func (i *Intro) UnmarshalJSON(b []byte) error {
+	var rep [3]interface{}
+	err := json.Unmarshal(b, &rep)
+	if err != nil {
+		return err
+	}
 
-// Description of style.
-func (i Intro) Description() string {
-	return i[2].(string)
+	i.Style = Style(rep[0].(float64))
+	i.String = rep[1].(string)
+	i.Description = rep[2].(string)
+
+	return nil
 }
 
 // IntrosResponse represents intros reponse.
@@ -28,5 +37,5 @@ type IntrosResponse struct {
 // Intros returns list of avaible generating styles.
 func (c *Client) Intros() (*IntrosResponse, error) {
 	var resp IntrosResponse
-	return &resp, c.get(introsapi, &resp)
+	return &resp, c.do(introsapi, nil, &resp)
 }

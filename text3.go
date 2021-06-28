@@ -2,13 +2,6 @@ package balaboba
 
 const text3api = "text3"
 
-// GetRequest contains parameters for text generating.
-type GetRequest struct {
-	Query  string `json:"query"`
-	Style  Style  `json:"intro"`
-	Filter int    `json:"filter"`
-}
-
 // GetResponse represents text generating response.
 type GetResponse struct {
 	Query    string `json:"query"`
@@ -18,12 +11,24 @@ type GetResponse struct {
 }
 
 // Get returns text gerated with passed params.
-func (c *Client) Get(get GetRequest) (*GetResponse, error) {
+func (c *Client) Get(query string, style Style, filter ...int) (*GetResponse, error) {
+	get := struct {
+		Query  string `json:"query"`
+		Style  Style  `json:"intro"`
+		Filter int    `json:"filter"`
+	}{
+		Query:  query,
+		Style:  style,
+		Filter: 1,
+	}
+	if len(filter) > 0 {
+		get.Filter = filter[0]
+	}
 	var resp GetResponse
-	return &resp, c.post(text3api, &resp, get)
+	return &resp, c.do(text3api, get, &resp)
 }
 
 // Options ???
 func (c *Client) Options() error {
-	return c.options(text3api)
+	return c.do(text3api, nil, nil)
 }

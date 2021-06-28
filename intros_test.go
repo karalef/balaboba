@@ -14,8 +14,4 @@ func TestIntros(t *testing.T) {
 		t.Log("reponse error", intros.Error)
 		t.FailNow()
 	}
-
-	for _, i := range intros.Intros {
-		t.Log(i.String(), i.Description(), i.Style())
-	}
 }

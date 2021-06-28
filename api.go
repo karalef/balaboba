@@ -4,20 +4,22 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"io"
 	"net"
 	"net/http"
+	"net/url"
 	"time"
 )
 
-const api = "https://zeapi.yandex.net/lab/api/yalm/"
-const dialTimeout = time.Duration(time.Second * 30)
-
-var header = http.Header{
-	"Content-Type": {"application/json"},
+var api = url.URL{
+	Scheme: "https",
+	Host:   "zeapi.yandex.net",
+	Path:   "/lab/api/yalm/",
 }
 
 // New makes new balaboba api client.
 func New() *Client {
+	const dialTimeout = time.Duration(time.Second * 30)
 	// using dialer because yandex blocks simple requests.
 	d := net.Dialer{
 		Timeout: dialTimeout,
@@ -30,18 +32,43 @@ func New() *Client {
 				TLSHandshakeTimeout: dialTimeout,
 			},
 		},
-		d: &d,
 	}
 }
 
 // Client is Yandex Balaboba client.
 type Client struct {
-	d *net.Dialer
 	c http.Client
 }
 
-func (c *Client) do(req *http.Request, dst interface{}) error {
-	resp, err := c.c.Do(req)
+func (c *Client) do(path string, data, dst interface{}) error {
+	u := api
+	u.Path += path
+
+	req := http.Request{
+		Method:     http.MethodGet,
+		URL:        &u,
+		Proto:      "HTTP/1.1",
+		ProtoMajor: 1,
+		ProtoMinor: 1,
+		Header:     make(http.Header),
+		Host:       u.Host,
+	}
+	if data != nil {
+		buf := bytes.NewBuffer(nil)
+		err := json.NewEncoder(buf).Encode(data)
+		if err != nil {
+			return err
+		}
+		req.Body = io.NopCloser(buf)
+		req.Header.Set("Content-Type", "application/json")
+		if dst != nil {
+			req.Method = http.MethodPost
+		}
+	} else if dst == nil {
+		req.Method = http.MethodOptions
+	}
+
+	resp, err := c.c.Do(&req)
 	if err != nil {
 		return err
 	}
@@ -53,36 +80,4 @@ func (c *Client) do(req *http.Request, dst interface{}) error {
 	}
 	resp.Body.Close()
 	return err
-}
-
-func (c *Client) get(path string, dst interface{}) error {
-	req, err := http.NewRequest(http.MethodGet, api+path, nil)
-	if err != nil {
-		return err
-	}
-	return c.do(req, dst)
-}
-
-func (c *Client) post(path string, dst interface{}, data interface{}) error {
-	buf := bytes.NewBuffer(nil)
-	err := json.NewEncoder(buf).Encode(data)
-	if err != nil {
-		return err
-	}
-	req, err := http.NewRequest(http.MethodPost, api+path, buf)
-	if err != nil {
-		return err
-	}
-	req.Header = header
-
-	return c.do(req, dst)
-}
-
-func (c *Client) options(path string) error {
-	req, err := http.NewRequest(http.MethodPost, api+path, nil)
-	if err != nil {
-		return err
-	}
-
-	return c.do(req, nil)
 }
