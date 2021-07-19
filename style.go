@@ -19,8 +19,13 @@ const (
 	FolkWisdom                      // Народные мудрости
 )
 
+// Valid ...
+func (s Style) Invalid() bool {
+	return int(s) > len(strStyles)-1
+}
+
 func (s *Style) String() string {
-	if int(*s) > len(strStyles)-1 {
+	if s.Invalid() {
 		*s = NoStyle
 	}
 	return strStyles[*s][0]
@@ -28,7 +33,7 @@ func (s *Style) String() string {
 
 // Description of this style.
 func (s *Style) Description() string {
-	if int(*s) > len(strStyles)-1 {
+	if s.Invalid() {
 		*s = NoStyle
 	}
 	return strStyles[*s][1]

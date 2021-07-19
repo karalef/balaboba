@@ -11,6 +11,9 @@ import (
 	"time"
 )
 
+// Timeout
+const Timeout = 15
+
 var api = url.URL{
 	Scheme: "https",
 	Host:   "zeapi.yandex.net",
@@ -19,17 +22,16 @@ var api = url.URL{
 
 // New makes new balaboba api client.
 func New() *Client {
-	const dialTimeout = time.Duration(time.Second * 30)
 	// using dialer because yandex blocks simple requests.
 	d := net.Dialer{
-		Timeout: dialTimeout,
+		Timeout: time.Second * Timeout,
 	}
 	return &Client{
 		c: http.Client{
-			Timeout: dialTimeout,
+			Timeout: d.Timeout,
 			Transport: &http.Transport{
 				DialContext:         d.DialContext,
-				TLSHandshakeTimeout: dialTimeout,
+				TLSHandshakeTimeout: d.Timeout,
 			},
 		},
 	}
