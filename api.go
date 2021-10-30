@@ -11,9 +11,6 @@ import (
 	"time"
 )
 
-// Timeout for api requests.
-const Timeout = 15
-
 var api = url.URL{
 	Scheme: "https",
 	Host:   "zeapi.yandex.net",
@@ -23,7 +20,7 @@ var api = url.URL{
 // New makes new balaboba api client.
 func New() *Client {
 	d := net.Dialer{
-		Timeout: time.Second * Timeout,
+		Timeout: 15 * time.Second,
 	}
 	return &Client{
 		httpClient: http.Client{

@@ -43,7 +43,7 @@ func main() {
 
 	b := balaboba.New()
 
-	fmt.Printf("please wait up to %d seconds\n", balaboba.Timeout)
+	fmt.Println("please wait up to 15 seconds")
 
 	r, err := b.Get(text, style)
 	if err != nil {
