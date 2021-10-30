@@ -46,12 +46,3 @@ func TestGet(t *testing.T) {
 		t.Log("NO bad query")
 	}
 }
-
-func TestOptions(t *testing.T) {
-	c := New()
-
-	err := c.Options()
-	if err != nil {
-		t.Fatal(err)
-	}
-}

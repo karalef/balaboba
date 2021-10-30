@@ -27,8 +27,3 @@ func (c *Client) Get(query string, style Style, filter ...int) (*GetResponse, er
 	var resp GetResponse
 	return &resp, c.do(text3api, get, &resp)
 }
-
-// Options ???
-func (c *Client) Options() error {
-	return c.do(text3api, nil, nil)
-}

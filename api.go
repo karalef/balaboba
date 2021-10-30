@@ -11,7 +11,7 @@ import (
 	"time"
 )
 
-// Timeout
+// Timeout for api requests.
 const Timeout = 15
 
 var api = url.URL{
@@ -22,12 +22,11 @@ var api = url.URL{
 
 // New makes new balaboba api client.
 func New() *Client {
-	// using dialer because yandex blocks simple requests.
 	d := net.Dialer{
 		Timeout: time.Second * Timeout,
 	}
 	return &Client{
-		c: http.Client{
+		httpClient: http.Client{
 			Timeout: d.Timeout,
 			Transport: &http.Transport{
 				DialContext:         d.DialContext,
@@ -39,7 +38,7 @@ func New() *Client {
 
 // Client is Yandex Balaboba client.
 type Client struct {
-	c http.Client
+	httpClient http.Client
 }
 
 func (c *Client) do(path string, data, dst interface{}) error {
@@ -66,11 +65,9 @@ func (c *Client) do(path string, data, dst interface{}) error {
 		if dst != nil {
 			req.Method = http.MethodPost
 		}
-	} else if dst == nil {
-		req.Method = http.MethodOptions
 	}
 
-	resp, err := c.c.Do(&req)
+	resp, err := c.httpClient.Do(&req)
 	if err != nil {
 		return err
 	}

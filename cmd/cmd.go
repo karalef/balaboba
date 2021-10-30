@@ -23,7 +23,7 @@ func main() {
 		flag.PrintDefaults()
 
 		fmt.Println("\nСтили:")
-		for s := balaboba.NoStyle; !s.Invalid(); s++ {
+		for s := balaboba.NoStyle; s <= balaboba.XChehov; s++ {
 			fmt.Println(uint8(s), "-", s.String(), "-", s.Description())
 		}
 

@@ -8,9 +8,9 @@ const introsapi = "intros"
 
 // Intro is generating style.
 type Intro struct {
-	Style       Style
 	String      string
 	Description string
+	Style       uint8
 }
 
 // UnmarshalJSON is Unmarshaler interface implementation.
@@ -21,7 +21,7 @@ func (i *Intro) UnmarshalJSON(b []byte) error {
 		return err
 	}
 
-	i.Style = Style(rep[0].(float64))
+	i.Style = uint8(rep[0].(float64))
 	i.String = rep[1].(string)
 	i.Description = rep[2].(string)
 
