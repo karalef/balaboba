@@ -45,7 +45,7 @@ func main() {
 
 	fmt.Println("please wait up to 15 seconds")
 
-	r, err := b.Get(text, style)
+	r, err := b.Get(nil, text, style)
 	if err != nil {
 		fmt.Println(err)
 		return

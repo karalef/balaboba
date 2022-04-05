@@ -2,20 +2,16 @@ package balaboba
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
 	"net"
 	"net/http"
-	"net/url"
 	"time"
 )
 
-var api = url.URL{
-	Scheme: "https",
-	Host:   "zeapi.yandex.net",
-	Path:   "/lab/api/yalm/",
-}
+const apiurl = "http://zeapi.yandex.net/lab/api/yalm/"
 
 // New makes new balaboba api client.
 func New() *Client {
@@ -38,33 +34,33 @@ type Client struct {
 	httpClient http.Client
 }
 
-func (c *Client) do(path string, data, dst interface{}) error {
-	u := api
-	u.Path += path
+func (c *Client) do(ctx context.Context, path string, data, dst interface{}) error {
+	method := http.MethodGet
+	var body io.Reader
 
-	req := http.Request{
-		Method:     http.MethodGet,
-		URL:        &u,
-		Proto:      "HTTP/1.1",
-		ProtoMajor: 1,
-		ProtoMinor: 1,
-		Header:     make(http.Header),
-		Host:       u.Host,
-	}
 	if data != nil {
-		buf := bytes.NewBuffer(nil)
-		err := json.NewEncoder(buf).Encode(data)
+		buf, err := json.Marshal(data)
 		if err != nil {
 			return err
 		}
-		req.Body = io.NopCloser(buf)
-		req.Header.Set("Content-Type", "application/json")
+		body = bytes.NewReader(buf)
 		if dst != nil {
-			req.Method = http.MethodPost
+			method = http.MethodPost
 		}
+	} else if dst == nil {
+		method = http.MethodOptions
 	}
 
-	resp, err := c.httpClient.Do(&req)
+	if ctx == nil {
+		ctx = context.Background()
+	}
+
+	req, _ := http.NewRequestWithContext(ctx, method, apiurl+path, body)
+	if body != nil {
+		req.Header.Set("Content-Type", "application/json")
+	}
+
+	resp, err := c.httpClient.Do(req)
 	if err != nil {
 		return err
 	}
@@ -76,4 +72,9 @@ func (c *Client) do(path string, data, dst interface{}) error {
 	}
 	resp.Body.Close()
 	return err
+}
+
+// IsAvailable checks the service for availability.
+func (c *Client) IsAvailable() bool {
+	return c.do(nil, text3api, nil, nil) == nil
 }

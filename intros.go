@@ -37,5 +37,5 @@ type IntrosResponse struct {
 // Intros returns list of avaible generating styles.
 func (c *Client) Intros() (*IntrosResponse, error) {
 	var resp IntrosResponse
-	return &resp, c.do(introsapi, nil, &resp)
+	return &resp, c.do(nil, introsapi, nil, &resp)
 }

@@ -6,7 +6,7 @@ func TestGet(t *testing.T) {
 	c := New()
 
 	// normal request
-	gen, err := c.Get("123", NoStyle)
+	gen, err := c.Get(nil, "123", NoStyle)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -20,7 +20,7 @@ func TestGet(t *testing.T) {
 	}
 
 	// invalid style, but it's ok for api.
-	gen, err = c.Get("123", Style(20))
+	gen, err = c.Get(nil, "123", Style(20))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -34,7 +34,7 @@ func TestGet(t *testing.T) {
 	}
 
 	// bad query
-	gen, err = c.Get(string([]rune{1093, 1091, 1081}), Style(20))
+	gen, err = c.Get(nil, string([]rune{1093, 1091, 1081}), Style(20))
 	if err != nil {
 		t.Fatal(err)
 	}
