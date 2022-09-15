@@ -3,63 +3,74 @@ package main
 import (
 	"flag"
 	"fmt"
+	"os"
 	"strings"
 
-	"github.com/Toffee-iZt/balaboba"
+	"github.com/karalef/balaboba"
 )
 
 var (
-	s    = flag.Int("s", 0, "generation style")
-	t    = flag.String("t", "", "text to generate")
-	help = flag.Bool("help", false, "print help")
+	style  = flag.Uint("s", 0, "generation style")
+	text   = flag.String("t", "", "text to generate")
+	styles = flag.Bool("styles", false, "print all available styles")
+	help   = flag.Bool("help", false, "print help")
 )
+
+var bb = balaboba.ClientRus
 
 func main() {
 	flag.Parse()
 
 	if *help {
-		fmt.Printf("%s\n\n%s\n%s\n\n", balaboba.About, balaboba.Warn1, balaboba.Warn2)
-
+		fmt.Printf("%s\n\n%s\n%s\n\n", balaboba.AboutRus, balaboba.Warn1Rus, balaboba.Warn2Rus)
 		flag.PrintDefaults()
-
-		fmt.Println("\nСтили:")
-		for s := balaboba.NoStyle; s <= balaboba.XChehov; s++ {
-			fmt.Println(uint8(s), "-", s.String(), "-", s.Description())
-		}
-
 		return
 	}
 
-	text := *t
-	if text == "" {
-		text = strings.Join(flag.Args(), " ")
+	if *styles {
+		allStyles := [...]balaboba.Style{
+			balaboba.Standart, balaboba.UserManual,
+			balaboba.Recipes, balaboba.ShortStories,
+			balaboba.WikipediaSipmlified, balaboba.MovieSynopses,
+			balaboba.FolkWisdom,
+		}
+		fmt.Println("Styles:")
+		for _, s := range allStyles {
+			str, desc := s.Description(balaboba.Rus)
+			fmt.Println(s, "-", str, "-", desc)
+		}
+		return
 	}
-	if text == "" {
+
+	if *text == "" {
+		*text = strings.Join(flag.Args(), " ")
+	}
+	if *text == "" {
 		fmt.Println("write the text to generate")
 		return
 	}
 
-	style := balaboba.Style(*s)
+	fmt.Println("please wait up to 20 seconds")
 
-	b := balaboba.New()
+	r, err := bb.Generate(nil, *text, balaboba.Style(*style))
+	checkErr(err, r.Error, r.BadQuery)
 
-	fmt.Println("please wait up to 15 seconds")
+	fmt.Println(r.FullText())
+}
 
-	r, err := b.Get(nil, text, style)
+func checkErr(err error, rerr int, bad int) {
 	if err != nil {
 		fmt.Println(err)
-		return
+		os.Exit(1)
 	}
 
-	if r.Error != 0 {
-		fmt.Println("response code:", r.Error)
-		return
+	if rerr != 0 {
+		fmt.Println("response code:", rerr)
+		os.Exit(1)
 	}
 
-	if r.BadQuery != 0 {
-		fmt.Println(balaboba.BadQuery)
-		return
+	if bad != 0 {
+		fmt.Println(balaboba.BadQueryRus)
+		os.Exit(1)
 	}
-
-	fmt.Printf("%s\n%s%s", style.String(), r.Query, r.Text)
 }

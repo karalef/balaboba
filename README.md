@@ -1,16 +1,17 @@
-# balaboba
-Yandex "Balaboba" API implementation in Go.
+# GoLang Balaboba API.
 
-Балабоба - это новый сервис, последняя технология для работы с текстами от компании Яндекс, позволяющий любому пользователю интернета писать тексты.
+Library for interaction with Yandex [Balaboba](https://yandex.ru/lab/yalm) API. Supports all methods and types of responses including WebSockets.
 
-Искусственный интеллект и нейронные сети, используемые в технологии Балабоба, позволяют дописывать предложения и создавать целые информационные статьи по заданной фразе.
+There is no official documentation for the api, so you can only use methods found in Balaboba requests.
 
-После того, как написано начало предложения технология Яндекс.Балабоба начинает нейронными сетями находить в сети Интернет, книгах, журналах, СМИ и других информационных источниках, включая сайты, всю информацию с искомыми словами и словосочетаниями.
+## What is a Balaboba?
 
-Затем полученные данные синонимизируются, меняется расположение групп слов в предложениях, складываются многочисленные варианты текстов, содержащих заданную фразу.
+[Russian](https://yandex.ru/lab/yalm-howto)
+
+[English](https://yandex.com/lab/yalm-howto-en)
 
 # Install
 
 ```
-go get -u github.com/Toffee-iZt/balaboba
+go get -u github.com/karalef/balaboba
 ```

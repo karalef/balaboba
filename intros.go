@@ -4,16 +4,14 @@ import (
 	"encoding/json"
 )
 
-const introsapi = "intros"
-
-// Intro is generating style.
+// Intro is generation style.
 type Intro struct {
+	Style       uint8
 	String      string
 	Description string
-	Style       uint8
 }
 
-// UnmarshalJSON is Unmarshaler interface implementation.
+// UnmarshalJSON is json.Unmarshaler interface implementation.
 func (i *Intro) UnmarshalJSON(b []byte) error {
 	var rep [3]interface{}
 	err := json.Unmarshal(b, &rep)
@@ -28,7 +26,7 @@ func (i *Intro) UnmarshalJSON(b []byte) error {
 	return nil
 }
 
-// IntrosResponse represents intros reponse.
+// IntrosResponse represents intros response.
 type IntrosResponse struct {
 	Intros []Intro `json:"intros"`
 	Error  int     `json:"error"`
@@ -36,6 +34,10 @@ type IntrosResponse struct {
 
 // Intros returns list of avaible generating styles.
 func (c *Client) Intros() (*IntrosResponse, error) {
+	ep := "intros"
+	if c.lang == Eng {
+		ep = "intros_eng"
+	}
 	var resp IntrosResponse
-	return &resp, c.do(nil, introsapi, nil, &resp)
+	return &resp, c.do(nil, ep, nil, &resp)
 }

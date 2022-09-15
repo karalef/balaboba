@@ -11,14 +11,21 @@ import (
 	"time"
 )
 
-const apiurl = "http://zeapi.yandex.net/lab/api/yalm/"
+const apiurl = "https://yandex.ru/lab/api/yalm/"
+
+// ClientRus var.
+var ClientRus = New(Rus)
+
+// ClientEng var.
+var ClientEng = New(Eng)
 
 // New makes new balaboba api client.
-func New() *Client {
+func New(lang Lang) *Client {
 	d := net.Dialer{
-		Timeout: 15 * time.Second,
+		Timeout: 20 * time.Second,
 	}
 	return &Client{
+		lang: lang,
 		httpClient: http.Client{
 			Timeout: d.Timeout,
 			Transport: &http.Transport{
@@ -32,6 +39,7 @@ func New() *Client {
 // Client is Yandex Balaboba client.
 type Client struct {
 	httpClient http.Client
+	lang       Lang
 }
 
 func (c *Client) do(ctx context.Context, path string, data, dst interface{}) error {
@@ -44,11 +52,7 @@ func (c *Client) do(ctx context.Context, path string, data, dst interface{}) err
 			return err
 		}
 		body = bytes.NewReader(buf)
-		if dst != nil {
-			method = http.MethodPost
-		}
-	} else if dst == nil {
-		method = http.MethodOptions
+		method = http.MethodPost
 	}
 
 	if ctx == nil {
@@ -74,7 +78,11 @@ func (c *Client) do(ctx context.Context, path string, data, dst interface{}) err
 	return err
 }
 
-// IsAvailable checks the service for availability.
-func (c *Client) IsAvailable() bool {
-	return c.do(nil, text3api, nil, nil) == nil
-}
+// Lang represents balaboba language.
+type Lang uint8
+
+// available languages.
+const (
+	Rus Lang = iota
+	Eng
+)

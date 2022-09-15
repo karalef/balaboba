@@ -3,7 +3,7 @@ package balaboba
 import "testing"
 
 func TestIntros(t *testing.T) {
-	c := New()
+	c := ClientRus
 
 	intros, err := c.Intros()
 	if err != nil {
@@ -11,7 +11,6 @@ func TestIntros(t *testing.T) {
 	}
 
 	if intros.Error != 0 {
-		t.Log("reponse error", intros.Error)
-		t.FailNow()
+		t.Fatal("reponse error", intros.Error)
 	}
 }

@@ -1,3 +1,3 @@
-module github.com/Toffee-iZt/balaboba
+module github.com/karalef/balaboba
 
 go 1.16
