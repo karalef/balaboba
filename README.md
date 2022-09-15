@@ -1,6 +1,6 @@
 # GoLang Balaboba API.
 
-Library for interaction with Yandex [Balaboba](https://yandex.ru/lab/yalm) API. Supports all methods and types of responses including WebSockets.
+Library for interaction with Yandex [Balaboba](https://yandex.ru/lab/yalm) API.
 
 There is no official documentation for the api, so you can only use methods found in Balaboba requests.
 

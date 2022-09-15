@@ -4,10 +4,13 @@ import "context"
 
 // Response represents text generating response.
 type Response struct {
-	Query    string `json:"query"`
-	Text     string `json:"text"`
-	BadQuery int    `json:"bad_query"`
-	Error    int    `json:"error"`
+	Query     string `json:"query"`
+	Text      string `json:"text"`
+	BadQuery  int    `json:"bad_query"`
+	Error     int    `json:"error"`
+	IsCached  int    `json:"is_cached"`
+	Intro     int    `json:"intro"`
+	Signature string `json:"signature"`
 }
 
 // FullText returns full text.
@@ -16,6 +19,8 @@ func (r Response) FullText() string {
 }
 
 // Generate generates with passed params.
+//
+// ctx can be nil.
 func (c *Client) Generate(ctx context.Context, query string, style Style, filter ...int) (*Response, error) {
 	f := 1
 	if len(filter) > 0 {
@@ -59,7 +64,7 @@ func (s Style) Description(lang Lang) (string, string) {
 }
 
 // Value returns style code.
-func (s Style) Value(lang Lang) uint8 {
+func (s Style) Value(lang Lang) int {
 	return s.intro(lang).Style
 }
 

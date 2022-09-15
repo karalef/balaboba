@@ -6,7 +6,7 @@ import (
 
 // Intro is generation style.
 type Intro struct {
-	Style       uint8
+	Style       int
 	String      string
 	Description string
 }
@@ -19,7 +19,7 @@ func (i *Intro) UnmarshalJSON(b []byte) error {
 		return err
 	}
 
-	i.Style = uint8(rep[0].(float64))
+	i.Style = int(rep[0].(float64))
 	i.String = rep[1].(string)
 	i.Description = rep[2].(string)
 
