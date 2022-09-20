@@ -13,6 +13,9 @@ import (
 
 const apiurl = "https://yandex.ru/lab/api/yalm/"
 
+// MinTimeout is a minimum time limit for api requests.
+const MinTimeout = 20 * time.Second
+
 // ClientRus var.
 var ClientRus = New(Rus)
 
@@ -20,9 +23,16 @@ var ClientRus = New(Rus)
 var ClientEng = New(Eng)
 
 // New makes new balaboba api client.
-func New(lang Lang) *Client {
+//
+// If the timeout is not specified or it is less than MinTimeout
+// it will be equal to MinTimeout.
+// Anyway the request can be canceled via the context.
+func New(lang Lang, timeout ...time.Duration) *Client {
 	d := net.Dialer{
-		Timeout: 20 * time.Second,
+		Timeout: MinTimeout,
+	}
+	if len(timeout) > 0 && timeout[0] > MinTimeout {
+		d.Timeout = timeout[0]
 	}
 	return &Client{
 		lang: lang,
@@ -42,24 +52,46 @@ type Client struct {
 	lang       Lang
 }
 
-func (c *Client) do(ctx context.Context, path string, data, dst interface{}) error {
+type responseBase struct {
+	Error int `json:"error"`
+}
+
+func (r responseBase) err() int { return r.Error }
+
+type errorable interface{ err() int }
+
+func (c *Client) do(endpoint string, data interface{}, dst errorable) error {
+	return c.doContext(context.Background(), endpoint, data, dst)
+}
+
+func (c *Client) doContext(ctx context.Context, endpoint string, data interface{}, dst errorable) error {
+	err := c.request(ctx, apiurl+endpoint, data, dst)
+	if err != nil {
+		return err
+	}
+	if c := dst.err(); c != 0 {
+		err = fmt.Errorf("balaboba: error code %d", c)
+	}
+	return err
+}
+
+func (c *Client) request(ctx context.Context, url string, data, dst interface{}) error {
 	method := http.MethodGet
 	var body io.Reader
 
 	if data != nil {
-		buf, err := json.Marshal(data)
+		b, err := json.Marshal(data)
 		if err != nil {
 			return err
 		}
-		body = bytes.NewReader(buf)
+		body = bytes.NewReader(b)
 		method = http.MethodPost
 	}
 
-	if ctx == nil {
-		ctx = context.Background()
+	req, err := http.NewRequestWithContext(ctx, method, url, body)
+	if err != nil {
+		return err
 	}
-
-	req, _ := http.NewRequestWithContext(ctx, method, apiurl+path, body)
 	if body != nil {
 		req.Header.Set("Content-Type", "application/json")
 	}
@@ -68,13 +100,21 @@ func (c *Client) do(ctx context.Context, path string, data, dst interface{}) err
 	if err != nil {
 		return err
 	}
+	defer resp.Body.Close()
+
 	if resp.StatusCode != http.StatusOK {
-		return fmt.Errorf("%s (%d)", resp.Status, resp.StatusCode)
+		return fmt.Errorf("balaboba: response status %s (%d)", resp.Status, resp.StatusCode)
 	}
-	if dst != nil {
-		err = json.NewDecoder(resp.Body).Decode(dst)
+
+	if dst == nil {
+		return nil
 	}
-	resp.Body.Close()
+
+	dec := json.NewDecoder(resp.Body)
+	if err := dec.Decode(dst); err != nil {
+		raw, _ := io.ReadAll(io.MultiReader(dec.Buffered(), resp.Body))
+		err = fmt.Errorf("balaboba: %s\nresponse: %s", err.Error(), string(raw))
+	}
 	return err
 }
 

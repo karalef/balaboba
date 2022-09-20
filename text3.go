@@ -2,34 +2,61 @@ package balaboba
 
 import "context"
 
-// Response represents text generating response.
+// Response contains generated text.
 type Response struct {
+	// Contains the query + generated continuation.
+	//
+	// If BadQuery is true it contains the
+	// bad query text in the Client language.
+	Text     string
+	BadQuery bool
+
+	raw  response
+	lang Lang
+}
+
+type response struct {
+	responseBase
 	Query     string `json:"query"`
 	Text      string `json:"text"`
-	BadQuery  int    `json:"bad_query"`
-	Error     int    `json:"error"`
-	IsCached  int    `json:"is_cached"`
+	BadQuery  uint8  `json:"bad_query"`
+	IsCached  uint8  `json:"is_cached"`
 	Intro     int    `json:"intro"`
 	Signature string `json:"signature"`
 }
 
-// FullText returns full text.
-func (r Response) FullText() string {
-	return r.Query + r.Text
+// Generate generates text with passed parameters.
+func (c *Client) Generate(query string, style Style, filter ...bool) (*Response, error) {
+	return c.GenerateContext(context.Background(), query, style, filter...)
 }
 
-// Generate generates with passed params.
-//
-// ctx can be nil.
-func (c *Client) Generate(ctx context.Context, query string, style Style, filter ...int) (*Response, error) {
-	f := 1
-	if len(filter) > 0 {
-		f = filter[0]
+// GenerateContext generates text with passed parameters.
+// It uses the context for the request.
+func (c *Client) GenerateContext(ctx context.Context, query string, style Style, filter ...bool) (*Response, error) {
+	f := 0
+	if len(filter) > 0 && filter[0] {
+		f = 1
 	}
-	var resp Response
-	return &resp, c.do(ctx, "text3", map[string]interface{}{
+
+	resp := Response{lang: c.lang}
+	err := c.doContext(ctx, "text3", map[string]interface{}{
 		"query": query, "intro": style.Value(c.lang), "filter": f,
-	}, &resp)
+	}, &resp.raw)
+	if err != nil {
+		return nil, err
+	}
+
+	resp.Text = resp.raw.Query + resp.raw.Text
+	resp.BadQuery = resp.raw.BadQuery != 0
+	if resp.BadQuery {
+		if c.lang == Rus {
+			resp.Text = BadQueryRus
+		} else {
+			resp.Text = BadQueryEng
+		}
+	}
+
+	return &resp, nil
 }
 
 // Style of generating text.

@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 )
 
-// Intro is generation style.
+// Intro is a generation style.
 type Intro struct {
 	Style       int
 	String      string
@@ -26,18 +26,15 @@ func (i *Intro) UnmarshalJSON(b []byte) error {
 	return nil
 }
 
-// IntrosResponse represents intros response.
-type IntrosResponse struct {
-	Intros []Intro `json:"intros"`
-	Error  int     `json:"error"`
-}
-
 // Intros returns list of avaible generating styles.
-func (c *Client) Intros() (*IntrosResponse, error) {
+func (c *Client) Intros() ([]Intro, error) {
 	ep := "intros"
 	if c.lang == Eng {
 		ep = "intros_eng"
 	}
-	var resp IntrosResponse
-	return &resp, c.do(nil, ep, nil, &resp)
+	var resp struct {
+		responseBase
+		Intros []Intro `json:"intros"`
+	}
+	return resp.Intros, c.do(ep, nil, &resp)
 }

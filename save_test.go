@@ -2,7 +2,7 @@ package balaboba
 
 import "testing"
 
-func TestGenerate(t *testing.T) {
+func TestSave(t *testing.T) {
 	c := ClientRus
 
 	gen, err := c.Generate("123", Standart)
@@ -11,5 +11,10 @@ func TestGenerate(t *testing.T) {
 	}
 	if gen.BadQuery {
 		t.Fatal("bad query", gen.BadQuery)
+	}
+
+	_, err = c.SaveResult(*gen)
+	if err != nil {
+		t.Fatal(err)
 	}
 }

@@ -9,8 +9,7 @@ func TestIntros(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-
-	if intros.Error != 0 {
-		t.Fatal("reponse error", intros.Error)
+	if len(intros) == 0 {
+		t.Fatal("response does not contain intros")
 	}
 }

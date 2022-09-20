@@ -28,17 +28,7 @@ func main() {
 	}
 
 	if *styles {
-		allStyles := [...]balaboba.Style{
-			balaboba.Standart, balaboba.UserManual,
-			balaboba.Recipes, balaboba.ShortStories,
-			balaboba.WikipediaSipmlified, balaboba.MovieSynopses,
-			balaboba.FolkWisdom,
-		}
-		fmt.Println("Styles:")
-		for _, s := range allStyles {
-			str, desc := s.Description(balaboba.Rus)
-			fmt.Println(s, "-", str, "-", desc)
-		}
+		printStyles()
 		return
 	}
 
@@ -52,25 +42,24 @@ func main() {
 
 	fmt.Println("please wait up to 20 seconds")
 
-	r, err := bb.Generate(nil, *text, balaboba.Style(*style))
-	checkErr(err, r.Error, r.BadQuery)
-
-	fmt.Println(r.FullText())
+	r, err := bb.Generate(*text, balaboba.Style(*style))
+	if err != nil {
+		fmt.Println(err.Error())
+		os.Exit(1)
+	}
+	fmt.Println(r.Text)
 }
 
-func checkErr(err error, rerr int, bad int) {
-	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
+func printStyles() {
+	allStyles := [...]balaboba.Style{
+		balaboba.Standart, balaboba.UserManual,
+		balaboba.Recipes, balaboba.ShortStories,
+		balaboba.WikipediaSipmlified, balaboba.MovieSynopses,
+		balaboba.FolkWisdom,
 	}
-
-	if rerr != 0 {
-		fmt.Println("response code:", rerr)
-		os.Exit(1)
-	}
-
-	if bad != 0 {
-		fmt.Println(balaboba.BadQueryRus)
-		os.Exit(1)
+	fmt.Println("Styles:")
+	for _, s := range allStyles {
+		str, desc := s.Description(balaboba.Rus)
+		fmt.Println(s, "-", str, "-", desc)
 	}
 }
