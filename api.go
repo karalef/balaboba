@@ -39,7 +39,7 @@ func New(lang Lang, timeout ...time.Duration) *Client {
 		httpClient: http.Client{
 			Timeout: d.Timeout,
 			Transport: &http.Transport{
-				DialContext:         d.DialContext,
+				DialTLSContext:      d.DialContext,
 				TLSHandshakeTimeout: d.Timeout,
 			},
 		},
@@ -112,8 +112,11 @@ func (c *Client) request(ctx context.Context, url string, data, dst interface{})
 
 	dec := json.NewDecoder(resp.Body)
 	if err := dec.Decode(dst); err != nil {
-		raw, _ := io.ReadAll(io.MultiReader(dec.Buffered(), resp.Body))
-		err = fmt.Errorf("balaboba: %s\nresponse: %s", err.Error(), string(raw))
+		raw, err := io.ReadAll(io.MultiReader(dec.Buffered(), resp.Body))
+		if err != nil {
+			return err
+		}
+		return fmt.Errorf("response: %s, error: %w", string(raw), err)
 	}
 	return err
 }
