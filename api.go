@@ -1,55 +1,43 @@
 package balaboba
 
 import (
-	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
 	"io"
-	"net"
 	"net/http"
 	"time"
 )
 
 const apiurl = "https://yandex.ru/lab/api/yalm/"
 
-// MinTimeout is a minimum time limit for api requests.
-const MinTimeout = 20 * time.Second
+// ClientRus is default russian client.
+var ClientRus = NewWithTimeout(Rus, 20*time.Second)
 
-// ClientRus var.
-var ClientRus = New(Rus)
-
-// ClientEng var.
-var ClientEng = New(Eng)
+// ClientEng is default english client.
+var ClientEng = NewWithTimeout(Eng, 20*time.Second)
 
 // New makes new balaboba api client.
-//
-// If the timeout is not specified or it is less than MinTimeout
-// it will be equal to MinTimeout.
-// Anyway the request can be canceled via the context.
-func New(lang Lang, timeout ...time.Duration) *Client {
-	d := net.Dialer{
-		Timeout: MinTimeout,
-	}
-	if len(timeout) > 0 && timeout[0] > MinTimeout {
-		d.Timeout = timeout[0]
-	}
-	return &Client{
+func New(lang Lang, client ...*http.Client) *Client {
+	c := &Client{
+		HTTP: http.DefaultClient,
 		lang: lang,
-		httpClient: http.Client{
-			Timeout: d.Timeout,
-			Transport: &http.Transport{
-				DialContext:         d.DialContext,
-				TLSHandshakeTimeout: d.Timeout,
-			},
-		},
 	}
+	if len(client) > 0 && client[0] != nil {
+		c.HTTP = client[0]
+	}
+	return c
+}
+
+// NewWithTimeout makes new balaboba api client with resuests timeout.
+func NewWithTimeout(lang Lang, timeout time.Duration) *Client {
+	return New(lang, &http.Client{Timeout: timeout})
 }
 
 // Client is Yandex Balaboba client.
 type Client struct {
-	httpClient http.Client
-	lang       Lang
+	HTTP *http.Client
+	lang Lang
 }
 
 type responseBase struct {
@@ -80,11 +68,9 @@ func (c *Client) request(ctx context.Context, url string, data, dst interface{})
 	var body io.Reader
 
 	if data != nil {
-		b, err := json.Marshal(data)
-		if err != nil {
-			return err
-		}
-		body = bytes.NewReader(b)
+		var w *io.PipeWriter
+		body, w = io.Pipe()
+		go func() { w.CloseWithError(json.NewEncoder(w).Encode(data)) }()
 		method = http.MethodPost
 	}
 
@@ -96,14 +82,14 @@ func (c *Client) request(ctx context.Context, url string, data, dst interface{})
 		req.Header.Set("Content-Type", "application/json")
 	}
 
-	resp, err := c.httpClient.Do(req)
+	resp, err := c.HTTP.Do(req)
 	if err != nil {
 		return err
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		return fmt.Errorf("balaboba: response status %s (%d)", resp.Status, resp.StatusCode)
+		return fmt.Errorf("balaboba: response status %s", resp.Status)
 	}
 
 	if dst == nil {
@@ -116,6 +102,43 @@ func (c *Client) request(ctx context.Context, url string, data, dst interface{})
 		err = fmt.Errorf("balaboba: %s\nresponse: %s", err.Error(), string(raw))
 	}
 	return err
+}
+
+// Lang returns client language.
+func (c Client) Lang() Lang {
+	return c.lang
+}
+
+// Warn1 returns a first warning in the client language.
+func (c Client) Warn1() string {
+	if c.lang == Rus {
+		return Warn1Rus
+	}
+	return Warn1Eng
+}
+
+// Warn2 returns a second warning in the client language.
+func (c Client) Warn2() string {
+	if c.lang == Rus {
+		return Warn2Rus
+	}
+	return Warn2Eng
+}
+
+// About returns a text about Balaboba in the client language.
+func (c Client) About() string {
+	if c.lang == Rus {
+		return AboutRus
+	}
+	return AboutEng
+}
+
+// BadQuery returns a bad query response in the client language.
+func (c Client) BadQuery() string {
+	if c.lang == Rus {
+		return BadQueryRus
+	}
+	return BadQueryEng
 }
 
 // Lang represents balaboba language.

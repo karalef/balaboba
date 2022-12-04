@@ -19,14 +19,14 @@ const Warn2Eng = `Balaboba can generate some very strange texts.
 Please be reasonable when sharing them online.
 Consider whether publishing the text may offend anyone or violate the law.`
 
-// AboutRus Balaboba in russian.
+// AboutRus is a text about Balaboba in russian.
 const AboutRus = `Балабоба демонстрирует, как с помощью нейросетей семейства YaLM можно продолжать тексты на любую тему, сохраняя связность и заданный стиль.
 Здесь эти нейросети используются для развлечения, но разрабатывались они для серьёзных задач — об этом можно почитать тут (https://yandex.ru/lab/yalm-howto).
 
 У Балабобы нет своего мнения или знания.
 Он умеет только подражать — писать тексты так, чтобы они были максимально похожи на реальные тексты из интернета.`
 
-// AboutEng Balaboba in english.
+// AboutEng is a text about Balaboba in english.
 const AboutEng = `Balaboba demonstrates how neural networks of the YaLM family can generate a coherent text on any topic, while maintaining a preset style.
 In Balaboba’s case, YaLM is used for entertainment, but the models were originally developed for serious tasks. Learn more here (https://yandex.com/lab/yalm-howto-en).
 

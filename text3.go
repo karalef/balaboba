@@ -11,8 +11,7 @@ type Response struct {
 	Text     string
 	BadQuery bool
 
-	raw  response
-	lang Lang
+	raw response
 }
 
 type response struct {
@@ -38,7 +37,7 @@ func (c *Client) GenerateContext(ctx context.Context, query string, style Style,
 		f = 1
 	}
 
-	resp := Response{lang: c.lang}
+	var resp Response
 	err := c.doContext(ctx, "text3", map[string]interface{}{
 		"query": query, "intro": style.Value(c.lang), "filter": f,
 	}, &resp.raw)
@@ -46,14 +45,15 @@ func (c *Client) GenerateContext(ctx context.Context, query string, style Style,
 		return nil, err
 	}
 
-	resp.Text = resp.raw.Query + resp.raw.Text
-	resp.BadQuery = resp.raw.BadQuery != 0
-	if resp.BadQuery {
+	if resp.raw.BadQuery != 0 {
+		resp.BadQuery = true
 		if c.lang == Rus {
 			resp.Text = BadQueryRus
 		} else {
 			resp.Text = BadQueryEng
 		}
+	} else {
+		resp.Text = resp.raw.Query + resp.raw.Text
 	}
 
 	return &resp, nil
