@@ -21,7 +21,7 @@ func (c *Client) SaveResult(r Response) (*Saved, error) {
 		Saved
 	}
 	err = c.do("save2", struct {
-		response
+		RawResponse
 		ID   string `json:"id"`
 		Mode string `json:"mode"`
 	}{r.raw, z.DefaultEn, "DONE"}, &s)

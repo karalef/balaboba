@@ -11,10 +11,16 @@ type Response struct {
 	Text     string
 	BadQuery bool
 
-	raw response
+	raw RawResponse
 }
 
-type response struct {
+// Raw returns the raw response.
+func (r Response) Raw() RawResponse {
+	return r.raw
+}
+
+// RawResponse contains raw response.
+type RawResponse struct {
 	responseBase
 	Query     string `json:"query"`
 	Text      string `json:"text"`
